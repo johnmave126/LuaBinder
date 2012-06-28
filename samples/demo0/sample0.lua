@@ -1,0 +1,11 @@
+rect = Rect:new(10, 10, 20, 20);
+print(rect.x, rect.y, rect.width, rect.height);
+rect.width = 200;
+rect.y = rect.y + 20;
+rect.x = 2^2;
+rect.height = rect.width + rect.x;
+print(rect.x, rect.y, rect.width, rect.height);
+rect:empty();
+print(rect.x, rect.y, rect.width, rect.height);
+rect:set(231,5346,23,45.22);
+print(rect.x, rect.y, rect.width, rect.height);
