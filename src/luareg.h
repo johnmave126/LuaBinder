@@ -27,23 +27,12 @@
 #include <string.h>
 #include <time.h>
 
-/*depretched lua api.....
-LUA_API void lua_upvalueref (lua_State *L, int fidx, int n) {
-  LClosure *f1;
-  UpVal **up1 = getupvalref(L, fidx, n, &f1);
-  UpVal *uv = &luaC_newobj(L, LUA_TUPVAL, sizeof(UpVal), NULL, 0)->uv;
-  api_checknelems(L, 1);
-  uv->v = &uv->u.value;
-  L->top--;
-  setobj(L, uv->v, L->top);
-  *up1 = uv;
-  luaC_objbarrier(L, f1, uv);
-}
-*/
+#define UNGC_TABLE_NAME "ungc_object"
 
 //Lua Additional Functions
 int lua_typerror (lua_State *L, int narg, const char *tname);
 int lua_setenv (lua_State *L, int index);
+typedef int (*luareg_nfp)(lua_State *L);
 
 //For C Classes and Functions
 template <typename T>
@@ -55,6 +44,11 @@ class LuaReg	{
 			const char *name;
 			mfp mfunc;
 		} RegType;
+		
+		typedef struct	{
+			const char *name;
+			luareg_nfp mfunc;
+		} GlobalRegType;
 		
 		static void Register(lua_State *L)	{
 			char buff[32];
@@ -118,6 +112,13 @@ class LuaReg	{
 			
 			lua_setmetatable(L, methods);
 			
+			for (GlobalRegType *l = T::global_methods; l->name; l++)	{
+				lua_pushstring(L, l->name);
+				lua_pushlightuserdata(L, (void*)l);
+				lua_pushcclosure(L, thunk_g, 1);
+				lua_settable(L, methods);
+			}
+			
 			for (RegType *l = T::methods; l->name; l++)	{
 				lua_pushstring(L, l->name);
 				lua_pushlightuserdata(L, (void*)l);
@@ -158,6 +159,13 @@ class LuaReg	{
 			return (obj->*(l->mfunc))(L);
 		}
 		
+		static int thunk_g(lua_State *L)	{
+			lua_remove(L, 1);
+			GlobalRegType *l = static_cast<GlobalRegType*>(lua_touserdata(L, lua_upvalueindex(1)));
+			return (*(l->mfunc))(L);
+		}
+		
+	public:
 		static T *check(lua_State *L, int narg)	{
 			if(!lua_getmetatable(L, 1))	{
 				luaL_error(L, "Invalid Userdata");
@@ -185,6 +193,7 @@ class LuaReg	{
 			return 1;
 		}
 		
+	private:
 		static int gc_T(lua_State *L)	{
 			userdataType *ud = static_cast<userdataType*>(lua_touserdata(L, 1));
 			T *obj = ud->pT;
@@ -316,9 +325,13 @@ class LuaClass	{
 		static const char *Lua_super;
 		static const char *lua_key;
 		static const char *sRand;
+		static lua_State *LVM;
 	
 	public:
-		static void Init(lua_State *L);	
+		static void Init(lua_State *L);
+		static const char *objname(lua_State *L, int narg);
+		static void ungc_table(lua_State *L);
+		static void remove_ungc(int ref);
 
 	private:
 		static int Class_Begin(lua_State *L);

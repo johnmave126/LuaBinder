@@ -58,6 +58,7 @@ void LuaClass::Init(lua_State *L)	{
 	char buff[32];
 	int i;
 	Lua_Class_Begin = false;
+	LVM = L;
 
 	srand((unsigned)time(NULL));
 
@@ -86,6 +87,10 @@ void LuaClass::Init(lua_State *L)	{
 	
 	lua_pushcfunction(L, Class_End);
 	lua_setglobal(L, "Class_End");
+	
+	lua_pushliteral(L, UNGC_TABLE_NAME);
+	lua_newtable(L);
+	lua_settable(L, LUA_REGISTRYINDEX);
 }
 
 int LuaClass::Class_Begin(lua_State *L)	{
@@ -1084,8 +1089,33 @@ int LuaClass::Class_newindex(lua_State *L)	{
 	return 0;
 }
 
+const char *LuaClass::objname(lua_State *L, int narg)	{
+	const char *name;
+	if(!(lua_isuserdata(L, narg) || lua_getmetatable(L, narg)) )	{
+		luaL_error(L, "Invalid Object");
+		return NULL;
+	}
+	lua_pushliteral(L, "__name");
+	lua_rawget(L, -2);
+	name = luaL_checkstring(L, -1);
+	lua_pop(L, 2);
+	return name;
+}
+
+void LuaClass::ungc_table(lua_State *L)	{
+	lua_pushliteral(L, UNGC_TABLE_NAME);
+	lua_gettable(L, LUA_REGISTRYINDEX);
+}
+
+void LuaClass::remove_ungc(int ref)	{
+	lua_pushliteral(LVM, UNGC_TABLE_NAME);
+	lua_gettable(LVM, LUA_REGISTRYINDEX);
+	luaL_unref(LVM, -1, ref);
+}
+
 int LuaClass::Lua_Class_Begin;
 const char *LuaClass::Lua_super;
 const char *LuaClass::Lua_processing;
 const char *LuaClass::lua_key;
 const char *LuaClass::sRand;
+lua_State *LuaClass::LVM;
