@@ -21,20 +21,14 @@
  */
 #include "luareg.h"
 
-int lua_typerror (lua_State *L, int narg, const char *tname) {
-  const char *msg = lua_pushfstring(L, "%s expected, got %s",
-                                    tname, luaL_typename(L, narg));
-  return luaL_argerror(L, narg, msg);
-}
-
 int lua_setenv (lua_State *L, int index) {
   const char *upv;
   if(!lua_isfunction(L, index)) {
-    lua_typerror(L, index, "function");
+    luaL_argerror(L, index, "function");
     return 0;
   }
   if(!( lua_istable(L, -1) || ( lua_isfunction(L, -1) && !lua_iscfunction(L, -1)))) {
-    lua_typerror(L, -1, "table or Lua closure");
+    luaL_argerror(L, -1, "table or Lua closure");
     return 0;
   }
   if( !(upv = lua_getupvalue(L, index, 1)) ) {
@@ -108,7 +102,7 @@ int LuaClass::Class_Begin(lua_State *L)	{
 	if(!lua_isnil(L, -1))
 		Lua_super = luaL_checkstring(L, -1);
 	if(lua_isnil(L, -2))	{
-		lua_typerror(L, 1, "string");
+		luaL_argerror(L, 1, "string");
 		return 0;
 	}
 	lua_getglobal(L, Lua_super);
@@ -183,7 +177,7 @@ int LuaClass::Class_Attr_a(lua_State *L)	{
 
 	lua_settop(L, 1);
 	if(!lua_istable(L, 1))	{
-		lua_typerror(L, 1, "table");
+		luaL_argerror(L, 1, "table");
 		return 0;
 	}
 	lua_getglobal(L, Lua_processing);
@@ -261,7 +255,7 @@ int LuaClass::Class_Attr_r(lua_State *L)	{
 
 	lua_settop(L, 1);
 	if(!lua_istable(L, 1))	{
-		lua_typerror(L, 1, "table");
+		luaL_argerror(L, 1, "table");
 		return 0;
 	}
 	lua_getglobal(L, Lua_processing);

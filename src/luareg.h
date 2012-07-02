@@ -30,7 +30,6 @@
 #define UNGC_TABLE_NAME "ungc_object"
 
 //Lua Additional Functions
-int lua_typerror (lua_State *L, int narg, const char *tname);
 int lua_setenv (lua_State *L, int index);
 typedef int (*luareg_nfp)(lua_State *L);
 
