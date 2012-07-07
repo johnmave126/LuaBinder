@@ -177,7 +177,7 @@ class LuaReg	{
 			void *pUserData = luaL_checkudata(L, narg, sC);
 			userdataType *ud = static_cast<userdataType*>(pUserData);
 			if( !ud )
-				lua_typerror(L, narg, sC);
+				luaL_argerror(L, narg, sC);
 			return ud->pT;
 		}
 		

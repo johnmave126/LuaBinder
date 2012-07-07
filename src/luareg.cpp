@@ -23,14 +23,10 @@
 
 int lua_setenv (lua_State *L, int index) {
   const char *upv;
-  if(!lua_isfunction(L, index)) {
-    luaL_argerror(L, index, "function");
-    return 0;
-  }
-  if(!( lua_istable(L, -1) || ( lua_isfunction(L, -1) && !lua_iscfunction(L, -1)))) {
-    luaL_argerror(L, -1, "table or Lua closure");
-    return 0;
-  }
+  if(!lua_isfunction(L, index))
+    return luaL_argerror(L, index, "function");
+  if(!( lua_istable(L, -1) || ( lua_isfunction(L, -1) && !lua_iscfunction(L, -1))))
+    return luaL_argerror(L, -1, "table or Lua closure");
   if( !(upv = lua_getupvalue(L, index, 1)) ) {
     return 0;
   }
@@ -101,15 +97,11 @@ int LuaClass::Class_Begin(lua_State *L)	{
 	
 	if(!lua_isnil(L, -1))
 		Lua_super = luaL_checkstring(L, -1);
-	if(lua_isnil(L, -2))	{
-		luaL_argerror(L, 1, "string");
-		return 0;
-	}
+	if(lua_isnil(L, -2))
+		return luaL_argerror(L, 1, "string");
 	lua_getglobal(L, Lua_super);
-	if(!lua_istable(L, -1))	{
-		luaL_error(L, "Class \"%s\" cannot be found", Lua_super);
-		return 0;
-	}
+	if(!lua_istable(L, -1))
+		return luaL_error(L, "Class \"%s\" cannot be found", Lua_super);
 	lua_pop(L, 1);
 	
 	Lua_processing = luaL_checkstring(L, -2);
@@ -176,10 +168,8 @@ int LuaClass::Class_Attr_a(lua_State *L)	{
 	char buff[32];
 
 	lua_settop(L, 1);
-	if(!lua_istable(L, 1))	{
-		luaL_argerror(L, 1, "table");
-		return 0;
-	}
+	if(!lua_istable(L, 1))
+		return luaL_argerror(L, 1, "table");
 	lua_getglobal(L, Lua_processing);
 
 	lua_pushnil(L);
@@ -187,8 +177,7 @@ int LuaClass::Class_Attr_a(lua_State *L)	{
 		cnt++;
 		if(!lua_istable(L, -1))	{
 			lua_pop(L, 1);
-			luaL_error(L, "table wanted at #%d argument of Class_Attr_a", cnt);
-			continue;
+			return luaL_error(L, "table wanted at #%d argument of Class_Attr_a", cnt);
 		}
 		lua_len(L, -1);
 		args = lua_tointeger(L, -1);
@@ -254,10 +243,8 @@ int LuaClass::Class_Attr_r(lua_State *L)	{
 	char buff[32];
 
 	lua_settop(L, 1);
-	if(!lua_istable(L, 1))	{
-		luaL_argerror(L, 1, "table");
-		return 0;
-	}
+	if(!lua_istable(L, 1))
+		return luaL_argerror(L, 1, "table");
 	lua_getglobal(L, Lua_processing);
 
 	lua_pushnil(L);
@@ -265,8 +252,7 @@ int LuaClass::Class_Attr_r(lua_State *L)	{
 		cnt++;
 		if(!lua_istable(L, -1))	{
 			lua_pop(L, 1);
-			luaL_error(L, "table wanted at #%d argument of Class_Attr_r", cnt);
-			continue;
+			return luaL_error(L, "table wanted at #%d argument of Class_Attr_r", cnt);
 		}
 		lua_len(L, -1);
 		args = lua_tointeger(L, -1);
