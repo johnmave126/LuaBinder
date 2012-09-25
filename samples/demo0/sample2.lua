@@ -39,28 +39,28 @@ Class_End();
 
 Class_Begin("superRect", "exRect");
 
-function exRect:new(x, y, width, height, z, length)
+function superRect:new(x, y, width, height, z, length)
 	super(x, y, width, height, z);
 	__length = length;
 	__length = math.max(math.min(__length, 255), 0);
 end
 
-function exRect:getV()
+function superRect:getV()
 	return __width * __height * __length;
 end
 
-function exRect:empty()
+function superRect:empty()
 	super();
 	__length = 0;
 end
 
-function exRect:set(x, y, width, height, z, length)
+function superRect:set(x, y, width, height, z, length)
 	super(x, y, width, height, z);
 	__length = length;
 	__length = math.max(math.min(__length, 255), 0);
 end
 
-function exRect:setlength(length)
+function superRect:setlength(length)
 	__length = math.max(math.min(length, 255), 0);
 end
 
